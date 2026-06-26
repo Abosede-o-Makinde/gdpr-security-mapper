@@ -70,7 +70,7 @@ This tool makes three practical contributions:
 │  ✓ Overall Compliance Score: 93.4%  [SATISFIED]                 │
 │                                                                 │
 │  System:     Customer Data Platform - Production                │
-│  Generated:  2026-06-16 14:22 UTC                               │
+│  Generated:  2026-06-26 16:58 UTC                               │
 │  Source:     data/sample_configs/sample_compliant.yaml          │
 │  Checks:     60 satisfied  /  2 partial  /  0 gaps              │
 │  Confidence: 98% of checks have evidence                        │
@@ -386,8 +386,13 @@ gdpr-security-mapper/
 ├── data/sample_configs/    # Demo configs (compliant, partial, gaps, NSG, SG)
 ├── docs/
 │   ├── ARCHITECTURE.md           # Pipeline diagram, scoring formula, extension points
-│   └── GDPR_MAPPING_REFERENCE.md # CIS, ISO 27001, NCSC CAF, MITRE ATT&CK cross-refs
+│   ├── GDPR_MAPPING_REFERENCE.md # CIS, ISO 27001, NCSC CAF, MITRE ATT&CK cross-refs
+│   └── screenshot.png            # Streamlit dashboard screenshot
 ├── tests/                  # pytest suite — 48 tests
+├── CONTRIBUTING.md         # How to add checks, parsers, and open PRs
+├── CODE_OF_CONDUCT.md
+├── SECURITY.md
+├── CHANGELOG.md
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
@@ -417,6 +422,15 @@ gdpr-security-mapper/
 - This tool assesses **declared** configuration, not actual runtime state. A claim that encryption is enabled is taken at face value — independent verification requires infrastructure scanning tools (Prowler, Checkov, etc.).
 - Article 30 checks are proxied through logging and processor inventory configuration, which evidences most but not all ROPA requirements. A full ROPA requires a dedicated register.
 - This is a decision-support tool. It does not constitute legal advice and is not a substitute for a formal GDPR audit or qualified DPO assessment.
+
+---
+
+## Contributing
+
+Contributions welcome — especially new checks backed by ICO guidance, parsers for cloud/IaC formats, and test cases that catch false positives.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to add a check, and the PR process.  
+Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). For security issues, email privately — details in [SECURITY.md](SECURITY.md).
 
 ---
 
