@@ -1,0 +1,173 @@
+# Sample: Partially compliant system — expected overall score ~50-65%
+# Represents a real-world system that has some controls but notable gaps.
+
+system:
+  name: "Legacy CRM System"
+  description: "On-premise CRM migrated to cloud IaaS — controls partially modernised"
+  environment: production
+  data_classification: personal
+  contains_special_category: false
+  data_subjects_count: 8000
+  processing_activities:
+    - "Customer relationship management"
+    - "Sales pipeline tracking"
+    - "Email marketing (opted-in)"
+
+firewall:
+  default_ingress: deny
+  default_egress: allow
+  network_segmentation: true
+  zones: [application, database]
+  rules:
+    - name: "Allow HTTPS"
+      protocol: TCP
+      port: "443"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow HTTP"
+      protocol: TCP
+      port: "80"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow RDP from internet (LEGACY)"
+      protocol: TCP
+      port: "3389"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow SSH from internet (LEGACY)"
+      protocol: TCP
+      port: "22"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+
+encryption:
+  at_rest:
+    enabled: true
+    algorithm: "AES-128"
+    key_management: managed
+    covers: [database]
+  in_transit:
+    tls_version: "1.2"
+    tls_12_minimum: true
+    hsts: false
+    certificate_valid: true
+    internal_tls: false
+  key_rotation:
+    enabled: false
+
+access_control:
+  mfa:
+    enabled: true
+    applies_to: privileged
+  privileged_access:
+    pam_solution: false
+    just_in_time: false
+    break_glass_documented: true
+  rbac:
+    enabled: true
+    principle_least_privilege: false
+    regular_review: false
+    review_frequency_days: null
+  service_accounts:
+    inventory_maintained: true
+    no_interactive_login: false
+    secrets_managed: false
+  admin_access:
+    wildcard_admin_restricted: false
+    default_admin_disabled: false
+
+logging:
+  audit_logging:
+    enabled: true
+    covers:
+      - authentication
+      - admin_actions
+  retention:
+    period_days: 90
+    immutable: false
+  centralized: false
+  siem_integration: false
+  alerting:
+    enabled: false
+    breach_detection_rules: false
+    anomaly_detection: false
+
+incident_response:
+  plan_documented: true
+  last_tested: null
+  breach_notification_72h: false
+  data_breach_register: false
+  dpo_contact_documented: true
+
+data_protection:
+  pseudonymisation: false
+  anonymisation: false
+  data_minimisation_enforced: false
+  retention_policy_documented: true
+  deletion_capability: true
+
+backups:
+  enabled: true
+  frequency: weekly
+  offsite: false
+  tested: false
+  test_frequency: null
+  encrypted: false
+
+vulnerability_management:
+  scanning:
+    enabled: true
+    frequency: monthly
+    last_scan: "2026-05-01"
+  patching:
+    policy_documented: true
+    critical_patch_sla_days: 30
+  penetration_testing:
+    conducted: false
+    frequency: null
+    last_test: null
+
+dpia:
+  required: true
+  completed: false
+  completion_date: null
+  dpo_sign_off: false
+  review_schedule: null
+
+international_transfers:
+  transfers_to_third_countries: true
+  transfer_mechanisms:
+    - type: "standard_contractual_clauses"
+      countries: ["United States"]
+  data_residency:
+    region: "EU West / US East"
+    documented: false
+
+third_party_processors:
+  inventory_maintained: true
+  dpas_signed: false
+  regular_review: false
+
+privacy:
+  notice_published: true
+  notice_url: null
+  notice_last_updated: "2024-06-01"   # over 2 years old — will trigger PARTIAL
+  lawful_bases_documented: true
+  purpose_limitation_enforced: false
+  cookie_consent_mechanism: false
+  subject_rights_process_documented: false
+
+data_retention:
+  policy_documented: true
+  maximum_retention_defined: false
+  automated_deletion: false
+  deletion_audit_trail: false
+  erasure_requests:
+    process_documented: true
+    sla_days: 45                       # exceeds 30-day SLA — PARTIAL
+    verified_deletion: false
+    automated_processing: false

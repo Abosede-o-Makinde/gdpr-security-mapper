@@ -1,0 +1,77 @@
+{
+  "name": "nsg-prod-webapp",
+  "location": "uksouth",
+  "resourceGroup": "rg-production",
+  "securityRules": [
+    {
+      "name": "Allow-HTTPS-Inbound",
+      "properties": {
+        "priority": 100,
+        "protocol": "TCP",
+        "access": "Allow",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "Internet",
+        "sourcePortRange": "*",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "443",
+        "description": "Allow HTTPS from internet to load balancer"
+      }
+    },
+    {
+      "name": "Allow-HTTP-Redirect",
+      "properties": {
+        "priority": 110,
+        "protocol": "TCP",
+        "access": "Allow",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "Internet",
+        "sourcePortRange": "*",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "80",
+        "description": "HTTP for redirect to HTTPS"
+      }
+    },
+    {
+      "name": "Allow-SSH-Management",
+      "properties": {
+        "priority": 200,
+        "protocol": "TCP",
+        "access": "Allow",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "10.0.0.0/24",
+        "sourcePortRange": "*",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "22",
+        "description": "SSH from management subnet only"
+      }
+    },
+    {
+      "name": "Deny-All-Inbound",
+      "properties": {
+        "priority": 4096,
+        "protocol": "*",
+        "access": "Deny",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "*",
+        "sourcePortRange": "*",
+        "destinationAddressPrefix": "*",
+        "destinationPortRange": "*",
+        "description": "Explicit deny-all fallback rule"
+      }
+    }
+  ],
+  "defaultSecurityRules": [
+    {
+      "name": "AllowVnetInBound",
+      "properties": {
+        "priority": 65000,
+        "protocol": "*",
+        "access": "Allow",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "destinationPortRange": "*"
+      }
+    }
+  ]
+}

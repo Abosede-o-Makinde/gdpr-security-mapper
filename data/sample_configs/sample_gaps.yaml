@@ -1,0 +1,169 @@
+# Sample: Highly non-compliant system — expected overall score ~10-25%
+# Represents a system with serious GDPR deficiencies — for demo/contrast purposes.
+
+system:
+  name: "Unprotected Legacy Portal"
+  description: "End-of-life web portal — no security controls updated since 2019"
+  environment: production
+  data_classification: personal
+  contains_special_category: true
+  data_subjects_count: 120000
+  processing_activities:
+    - "Customer portal access"
+    - "Health records access (special category)"
+    - "Payment processing"
+
+firewall:
+  default_ingress: allow
+  default_egress: allow
+  network_segmentation: false
+  zones: []
+  rules:
+    - name: "Allow all inbound (CRITICAL)"
+      protocol: "*"
+      port: "*"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow RDP from internet"
+      protocol: TCP
+      port: "3389"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow SSH from internet"
+      protocol: TCP
+      port: "22"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+    - name: "Allow MSSQL from internet"
+      protocol: TCP
+      port: "1433"
+      source: "0.0.0.0/0"
+      action: allow
+      direction: inbound
+
+encryption:
+  at_rest:
+    enabled: false
+    algorithm: null
+    key_management: null
+    covers: []
+  in_transit:
+    tls_version: "1.0"
+    tls_12_minimum: false
+    hsts: false
+    certificate_valid: false
+    internal_tls: false
+  key_rotation:
+    enabled: false
+
+access_control:
+  mfa:
+    enabled: false
+    applies_to: none
+  privileged_access:
+    pam_solution: false
+    just_in_time: false
+    break_glass_documented: false
+  rbac:
+    enabled: false
+    principle_least_privilege: false
+    regular_review: false
+    review_frequency_days: null
+  service_accounts:
+    inventory_maintained: false
+    no_interactive_login: false
+    secrets_managed: false
+  admin_access:
+    wildcard_admin_restricted: false
+    default_admin_disabled: false
+
+logging:
+  audit_logging:
+    enabled: false
+    covers: []
+  retention:
+    period_days: 30
+    immutable: false
+  centralized: false
+  siem_integration: false
+  alerting:
+    enabled: false
+    breach_detection_rules: false
+    anomaly_detection: false
+
+incident_response:
+  plan_documented: false
+  last_tested: null
+  breach_notification_72h: false
+  data_breach_register: false
+  dpo_contact_documented: false
+
+data_protection:
+  pseudonymisation: false
+  anonymisation: false
+  data_minimisation_enforced: false
+  retention_policy_documented: false
+  deletion_capability: false
+
+backups:
+  enabled: false
+  frequency: null
+  offsite: false
+  tested: false
+  test_frequency: null
+  encrypted: false
+
+vulnerability_management:
+  scanning:
+    enabled: false
+    frequency: null
+    last_scan: null
+  patching:
+    policy_documented: false
+    critical_patch_sla_days: 180
+  penetration_testing:
+    conducted: false
+    frequency: null
+    last_test: null
+
+dpia:
+  required: true
+  completed: false
+  completion_date: null
+  dpo_sign_off: false
+  review_schedule: null
+
+international_transfers:
+  transfers_to_third_countries: true
+  transfer_mechanisms: []
+  data_residency:
+    region: null
+    documented: false
+
+third_party_processors:
+  inventory_maintained: false
+  dpas_signed: false
+  regular_review: false
+
+privacy:
+  notice_published: false
+  notice_url: null
+  notice_last_updated: null
+  lawful_bases_documented: false
+  purpose_limitation_enforced: false
+  cookie_consent_mechanism: false
+  subject_rights_process_documented: false
+
+data_retention:
+  policy_documented: false
+  maximum_retention_defined: false
+  automated_deletion: false
+  deletion_audit_trail: false
+  erasure_requests:
+    process_documented: false
+    sla_days: 180
+    verified_deletion: false
+    automated_processing: false
