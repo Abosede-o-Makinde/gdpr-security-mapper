@@ -15,7 +15,7 @@ Input Config
         │  SecurityConfig (Pydantic model, all fields Optional)
         ▼
    ┌─────────────────┐
-   │ Compliance      │  Runs 49 Check functions, one per control
+   │ Compliance      │  Runs one Check function per control (62 total)
    │ Engine          │  Each check → (status, evidence, finding)
    └────────┬────────┘
             │  ComplianceReport
@@ -175,7 +175,7 @@ Tab structure:
 - `tab_overview` — Plotly gauge + bar chart + Pandas summary table
 - `tab_article_detail` — per-article selector + check table
 - `tab_gap_analysis` — severity pie chart + priority remediation table
-- `tab_evidence` — filterable evidence log (all 49 checks)
+- `tab_evidence` — searchable, filterable evidence log (all checks)
 - `tab_export` — `st.download_button` for JSON and PDF
 
 ---

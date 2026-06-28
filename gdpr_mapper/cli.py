@@ -50,7 +50,7 @@ def cli():
     GDPR Security Mapper — maps security configurations to UK GDPR compliance articles.
 
     Analyse firewall rules, encryption settings, access controls and logging
-    configuration against 49 checks across 10 UK GDPR articles.
+    configuration against UK GDPR articles (see `gdpr-mapper articles` for coverage).
     """
 
 

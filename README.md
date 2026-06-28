@@ -2,38 +2,16 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![UK GDPR](https://img.shields.io/badge/UK%20GDPR-14%20articles-blue)](docs/GDPR_MAPPING_REFERENCE.md)
 
-**Map your system's security configuration to UK GDPR compliance — in seconds.**
+Maps a security configuration (YAML or cloud firewall export) to UK GDPR articles. You get a terminal report, JSON, PDF, and a Streamlit dashboard. Each check returns `SATISFIED`, `PARTIAL`, or `GAP` with evidence text and remediation notes.
 
-Takes firewall rules, encryption settings, access control policies, logging configuration, privacy notices, and data retention schedules and produces a structured compliance map: which UK GDPR articles are satisfied, partially met, or have gaps. Outputs a Rich-formatted terminal report, machine-readable JSON, and a professional PDF. Includes a Streamlit web dashboard with interactive charts.
-
----
-
-## The problem this solves
-
-Security engineers configure controls. Data protection officers assess GDPR compliance. These two worlds rarely speak the same language, and no open-source tooling currently bridges them.
-
-Existing tools fall into two camps:
-
-| Tool type | What it gives you | What it misses |
-|-----------|------------------|----------------|
-| Legal checklists (OneTrust, TrustArc) | Article-level questionnaires | No connection to actual technical controls |
-| Cloud security posture tools (Prowler, ScoutSuite) | Infrastructure findings | No mapping to GDPR articles or regulatory evidence |
-
-GDPR Security Mapper occupies the gap: it reads the **technical security configuration** you already maintain and produces **article-level compliance evidence** — artefacts a DPO, auditor, or ICO investigator can read.
+Assessed against **UK GDPR** (retained EU law). Supervisory authority: **ICO**. See [docs/GDPR_MAPPING_REFERENCE.md](docs/GDPR_MAPPING_REFERENCE.md) for article-to-control mapping.
 
 ---
 
-## What it contributes
+## Background
 
-This tool makes three practical contributions:
-
-**1. A vocabulary bridge.** It translates infrastructure-level controls (TLS version, firewall default, key rotation period, erasure SLA) into GDPR article language. A security engineer filling in `tls_12_minimum: true` does not need to know that this evidences Art.32(1)(a). The tool makes the connection.
-
-**2. Proportionate, evidenced compliance.** Rather than a binary pass/fail, each check returns a status (`SATISFIED` / `PARTIAL` / `GAP`) with a specific evidence string and remediation recommendation. This is the format ICO investigators and internal auditors expect.
-
-**3. A risk-aware score.** The compliance score is weighted by check severity and adjusted for risk profile — systems processing special category data (Art.9) face a higher threshold to reach SATISFIED. A config confidence metric tells you how much of the score is based on real evidence versus fields you haven't declared.
+Security teams maintain technical controls; DPOs need article-level evidence. Legal GRC tools rarely read firewall or encryption settings. Cloud posture scanners find misconfigurations but do not map them to GDPR articles. This tool reads the config you already have and produces structured output per article — 62 checks across 14 articles.
 
 ---
 
@@ -65,9 +43,9 @@ This tool makes three practical contributions:
 
 ```
 ╭─────────────────────────────────────────────────────────────────╮
-│              UK GDPR Security Compliance Assessment             │
+│              UK GDPR compliance assessment                      │
 │                                                                 │
-│  ✓ Overall Compliance Score: 93.4%  [SATISFIED]                 │
+│  Overall Compliance Score: 93.4%  [SATISFIED]                   │
 │                                                                 │
 │  System:     Customer Data Platform - Production                │
 │  Generated:  2026-06-26 16:58 UTC                               │
@@ -168,45 +146,26 @@ pip install -e ".[dev]"
 
 ## Use cases
 
-### DPIA preparation
-
-Before processing starts, run a baseline scan to identify controls that need to be in place before the DPIA can be signed off. The Art.35 check will flag if the DPIA itself is incomplete; Art.32 checks flag the technical measures the DPIA must document.
-
-```bash
-gdpr-mapper scan my_system.yaml --report pdf --output dpia_baseline_$(date +%Y%m%d).pdf
-```
-
-### ICO audit response
-
-When the ICO requests evidence of technical measures, export the JSON report. Each check includes a specific `evidence` string (e.g. "AES-256 encryption, key management: HSM, covers: database, storage, backups") that can be cited directly in your response.
+- **DPIA baseline** — scan before go-live; Art.35 and Art.32 checks flag gaps in documented measures.
+- **Audit evidence** — JSON export includes per-check `evidence` strings you can cite in ICO responses.
+- **CI gate** — fail a pipeline when `overall_score` drops below a threshold (see example below).
 
 ```bash
 gdpr-mapper scan my_system.yaml --report json --output ico_evidence.json
 ```
 
-### DevSecOps pipeline integration
-
-Assert minimum compliance scores in CI/CD so that a deployment that disables encryption or removes audit logging fails the pipeline before it reaches production.
-
 ```yaml
-# In your CI workflow
-- name: Assert compliance score
-  run: |
+# CI example — assert minimum score
+- run: |
     gdpr-mapper scan infra/security_config.yaml --report json --output /tmp/report.json
     python3 -c "
-    import json, sys
+    import json
     r = json.load(open('/tmp/report.json'))
-    assert r['overall_score'] >= 0.80, f'Compliance score {r[\"overall_score\"]*100:.1f}% below 80% threshold'
+    assert r['overall_score'] >= 0.80, f\"Score {r['overall_score']*100:.1f}% below 80%\"
     "
 ```
 
-### Periodic compliance monitoring
-
-Schedule monthly scans and diff the JSON output to track compliance trends over time — useful for board reporting, ISO 27001 surveillance audits, and Cyber Essentials renewals.
-
-### Third-party processor assessment
-
-Ask processors to complete the YAML template as part of due diligence. Run the scan to get a standardised, comparable compliance profile across your supply chain — rather than relying on self-completed questionnaires.
+For periodic monitoring, diff JSON reports month to month. For processor due diligence, ask vendors to complete the YAML template and run the same scan for a comparable profile.
 
 ---
 
@@ -226,7 +185,7 @@ system:
     - "Transaction processing"
 
 firewall:
-  default_ingress: deny             # deny = privacy-by-design ✓
+  default_ingress: deny             # deny = privacy-by-default
   network_segmentation: true
   rules:
     - name: "Allow HTTPS"
@@ -327,12 +286,7 @@ gdpr-mapper serve --port 8080 --host 0.0.0.0
 
 ![Streamlit dashboard — compliance overview with gauge, article scores, and summary metrics](docs/screenshot.png)
 
-The Streamlit dashboard provides:
-- **Overview** — compliance gauge chart, per-article bar chart, summary statistics table
-- **Article Detail** — per-article check table with evidence strings and remediation guidance
-- **Gap Analysis** — severity-sorted remediation priority list (CRITICAL gaps first)
-- **Evidence** — filterable, searchable raw evidence log for all 62 checks
-- **Export** — one-click PDF and JSON download
+The Streamlit dashboard (`gdpr-mapper serve`) has five tabs: overview (gauge and bar chart), article detail, gap analysis, searchable evidence log, and JSON/PDF export.
 
 ---
 
@@ -400,22 +354,6 @@ gdpr-security-mapper/
 
 ---
 
-## Roadmap
-
-| Milestone | Status |
-|-----------|--------|
-| 14-article core (Art.5b, 5e, 5f, 13, 17, 25, 30, 32, 33, 35, 44) | Done |
-| Config confidence score + Art.9 risk uplift | Done |
-| GCP VPC / Firewall Rules parser | Planned |
-| Terraform state file parser | Planned |
-| Art.6 — Lawful Basis for Processing (dedicated article) | Planned |
-| Art.22 — Automated Decision-Making | Planned |
-| Art.28 — Processor Contracts (DPAs) | Planned |
-| Trend reporting (diff two JSON reports over time) | Planned |
-| Integration with Azure Policy / AWS Config for live state | Under consideration |
-
----
-
 ## Limitations
 
 - **Firewall-only parsers** (Azure NSG, AWS SG) can only assess Art.5(1)(f), Art.25 (partial), and Art.32(1)(b). All other articles require the full unified YAML config.
@@ -427,10 +365,7 @@ gdpr-security-mapper/
 
 ## Contributing
 
-Contributions welcome — especially new checks backed by ICO guidance, parsers for cloud/IaC formats, and test cases that catch false positives.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to add a check, and the PR process.  
-Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). For security issues, email privately — details in [SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md). New checks (with ICO references), parsers, and regression tests are especially useful. [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies. Security issues: see [SECURITY.md](SECURITY.md).
 
 ---
 

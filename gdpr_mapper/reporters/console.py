@@ -1,12 +1,12 @@
 """Rich terminal reporter — formatted tables and panels."""
 
 from __future__ import annotations
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.text import Text
-from rich.columns import Columns
+
 from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 from ..models.compliance import ComplianceReport, ComplianceStatus, Severity
 
@@ -15,13 +15,6 @@ _STATUS_STYLE = {
     ComplianceStatus.PARTIAL: "bold yellow",
     ComplianceStatus.GAP: "bold red",
     ComplianceStatus.NA: "dim",
-}
-
-_STATUS_ICON = {
-    ComplianceStatus.SATISFIED: "✓",
-    ComplianceStatus.PARTIAL: "~",
-    ComplianceStatus.GAP: "✗",
-    ComplianceStatus.NA: "-",
 }
 
 _SEVERITY_STYLE = {
@@ -52,25 +45,25 @@ class ConsoleReporter:
         style = _STATUS_STYLE[status]
 
         score_text = Text()
-        score_text.append(f"\n  {_STATUS_ICON[status]} ", style=style)
-        score_text.append(f"Overall Compliance Score: ", style="bold")
+        score_text.append("\n  ", style="")
+        score_text.append("Overall compliance score: ", style="bold")
         score_text.append(f"{score_pct:.1f}%  ", style=style)
         score_text.append(f"[{status.value}]\n", style=style)
 
         meta_text = Text()
-        meta_text.append(f"  System:     ", style="dim")
+        meta_text.append("  System:     ", style="dim")
         meta_text.append(f"{report.system_name}\n")
-        meta_text.append(f"  Generated:  ", style="dim")
+        meta_text.append("  Generated:  ", style="dim")
         meta_text.append(f"{report.generated_at.strftime('%Y-%m-%d %H:%M UTC')}\n")
-        meta_text.append(f"  Source:     ", style="dim")
+        meta_text.append("  Source:     ", style="dim")
         meta_text.append(f"{report.config_source}\n")
-        meta_text.append(f"  Checks:     ", style="dim")
+        meta_text.append("  Checks:     ", style="dim")
         total = report.total_checks
         gaps = len(report.all_gaps)
         partials = len(report.all_partials)
         satisfied = total - gaps - partials
         meta_text.append(f"{satisfied} satisfied  /  {partials} partial  /  {gaps} gaps\n")
-        meta_text.append(f"  Confidence: ", style="dim")
+        meta_text.append("  Confidence: ", style="dim")
         conf_pct = report.config_confidence * 100
         if conf_pct >= 75:
             conf_style = "green"
@@ -86,7 +79,7 @@ class ConsoleReporter:
         self.console.print(
             Panel(
                 Text.assemble(score_text, meta_text),
-                title="[bold]UK GDPR Security Compliance Assessment[/bold]",
+                title="[bold]UK GDPR compliance assessment[/bold]",
                 border_style=style.replace("bold ", ""),
                 padding=(0, 1),
             )
@@ -111,7 +104,6 @@ class ConsoleReporter:
         for art in report.articles:
             status = art.status
             style = _STATUS_STYLE[status]
-            icon = _STATUS_ICON[status]
             finding = art.top_finding
             if len(finding) > 60:
                 finding = finding[:57] + "..."
@@ -119,7 +111,7 @@ class ConsoleReporter:
                 art.article_id,
                 art.article_title,
                 f"{art.score * 100:.0f}%",
-                Text(f"{icon} {status.value}", style=style),
+                Text(status.value, style=style),
                 str(art.gap_count) if art.gap_count else "-",
                 str(art.partial_count) if art.partial_count else "-",
                 Text(finding, style="dim" if status == ComplianceStatus.SATISFIED else ""),
@@ -153,7 +145,7 @@ class ConsoleReporter:
                 table.add_row(
                     chk.check_id,
                     chk.control_name,
-                    Text(f"{_STATUS_ICON[chk.status]} {chk.status.value}", style=status_style),
+                    Text(chk.status.value, style=status_style),
                     detail,
                     Text(chk.severity.value, style=sev_style),
                 )
@@ -164,8 +156,10 @@ class ConsoleReporter:
         gaps = report.all_gaps[:10]
         if not gaps:
             self.console.print(
-                Panel("[bold green]No gaps identified — all controls satisfied.[/bold green]",
-                      border_style="green")
+                Panel(
+                    "[green]No gaps identified — all controls satisfied.[/green]",
+                    border_style="green",
+                )
             )
             return
 
